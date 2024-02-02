@@ -46,5 +46,25 @@ let app = new Vue({
                 toColumn.cards.push(card);
             }
         },
+        moveCardIfCompleted(card) {
+            if (card.columnId === 1) {
+                const completedCount = card.items.filter(item => item.completed).length;
+                const totalCount = card.items.length;
+                if (completedCount / totalCount > 0.5 && this.columns[1].cards.length < this.getMaxCards(2)) {
+                    this.moveCard(card, 1, 2);
+                }
+                if (completedCount === totalCount) {
+                    this.moveCard(card, 1, 3);
+                    card.completedAt = new Date().toLocaleString();
+                }
+            } else if (card.columnId === 2) {
+                const completedCount = card.items.filter(item => item.completed).length;
+                const totalCount = card.items.length;
+                if (completedCount === totalCount) {
+                    this.moveCard(card, 2, 3);
+                    card.completedAt = new Date().toLocaleString();
+                }
+            }
+        },
     },
 });
