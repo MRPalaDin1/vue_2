@@ -36,5 +36,15 @@ let app = new Vue({
         removeItem(card, itemIndex) {
             card.items.splice(itemIndex, 1);
         },
+        moveCard(card, fromColumnId, toColumnId) {
+            const fromColumn = this.columns.find(column => column.id === fromColumnId);
+            const toColumn = this.columns.find(column => column.id === toColumnId);
+            const index = fromColumn.cards.indexOf(card);
+            if (index !== -1) {
+                fromColumn.cards.splice(index, 1);
+                card.columnId = toColumnId;
+                toColumn.cards.push(card);
+            }
+        },
     },
 });
