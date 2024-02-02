@@ -7,14 +7,22 @@ let app = new Vue({
                 { id: 2, title: 'Столбец2', cards: [] },
                 { id: 3, title: 'Столбец3', cards: [] },
             ],
+            column1Locked: false,
         };
     },
     methods: {
         addCard(column) {
-            if (column.cards.length < this.getMaxCards(column.id)) {
-                const newCard = { title: 'Новая карточка', items: [] };
+            if (!this.column1Locked && column.cards.length < this.getMaxCards(column.id)) {
+                const newCard = { title: 'Новая карточка', items: [], columnId: column.id };
                 column.cards.push(newCard);
-                this.saveToLocalStorage();
+
+                if (column.id === 1) {
+                    const completedCount = newCard.items.filter(item => item.completed).length;
+                    const totalCount = newCard.items.length;
+                    if (completedCount / totalCount > 0.5 && this.columns[1].cards.length < this.getMaxCards(2)) {
+                        this.moveCard(newCard, 1, 2);
+                    }
+                }
             }
         },
         removeCard(column, card) {
@@ -65,6 +73,14 @@ let app = new Vue({
                     card.completedAt = new Date().toLocaleString();
                 }
             }
+        },
+        isCardLocked(card) {
+            if (card.columnId === 1 && this.columns[1].cards.length === this.getMaxCards(2)) {
+                const completedCount = card.items.filter(item => item.completed).length;
+                const totalCount = card.items.length;
+                return completedCount / totalCount > 0.5;
+            }
+            return false;
         },
     },
 });
