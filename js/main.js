@@ -3,9 +3,9 @@ let app = new Vue({
     data() {
         return {
             columns: [
-                { id: 1, title: 'Столбец1', cards: [] },
-                { id: 2, title: 'Столбец2', cards: [] },
-                { id: 3, title: 'Столбец3', cards: [] },
+                { id: 1, title: 'Подготовка', cards: [] },
+                { id: 2, title: 'В процессе', cards: [] },
+                { id: 3, title: 'Завершенные', cards: [] },
             ],
             column1Locked: false,
         };
@@ -82,5 +82,47 @@ let app = new Vue({
             }
             return false;
         },
+        saveToLocalStorage() {
+            localStorage.setItem('columns', JSON.stringify(this.columns));
+        },
+    },
+    watch: {
+        columns: {
+            handler() {
+                this.column1Locked = this.isColumn1Locked();
+                this.saveToLocalStorage();
+            },
+            deep: true,
+        },
+    },
+    template: `
+    <div id="app">
+      <div v-for="column in columns" :key="column.id" class="column">
+        <h2 class="columnTitle">{{ column.title }}</h2>
+        <button @click="addCard(column)" :disabled="column.id === 1 ? column1Locked : false" v-if="column.id===1">Добавить задачу</button>
+        <div v-for="card in column.cards" :key="card.title" class="card">
+          <h3 class="cardTitle">{{ card.title }}</h3>
+          <ul>
+            <li v-for="(item, index) in card.items" :key="index" class="list-item">
+              <input type="checkbox" v-model="item.completed" @change="moveCardIfCompleted(card)" :disabled="isCardLocked(card)">
+              {{ item.text }}
+              <button @click="removeItem(card, index)" :disabled="isCardLocked(card)">Удалить пункт</button>
+            </li>
+          </ul>
+          <button @click="addItem(card)" :disabled="isCardLocked(card)" v-if="column.id===1">Добавить пункт</button>
+          <button @click="removeCard(column, card)" :disabled="isCardLocked(card)">Удалить задачу</button>
+          <p v-if="column.id===3">Последний пункт выполнен: {{ card.completedAt }}</p>
+        </div>
+      </div>
+    </div>
+  `,
+    created() {
+        const storedColumns = localStorage.getItem('columns');
+        if (storedColumns) {
+            this.columns = JSON.parse(storedColumns);
+        }
+    },
+    beforeUpdate() {
+        this.saveToLocalStorage();
     },
 });
